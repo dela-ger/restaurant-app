@@ -6,7 +6,7 @@ const db = new sqlite3.Database('./db/database.sqlite');
 
 // POST /api/table/call-waiter — Notify waiter
 router.post('/call-waiter', (req, res) => {
-  const { table_id } = req.body;
+  const { table_id } = req.body || {};
 
   if (!table_id) return res.status(400).json({ error: 'Missing table_id' });
 
