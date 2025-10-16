@@ -50,4 +50,19 @@ router.get('/:tableId', (req, res) => {
   );
 });
 
+router.get('/', (_req, res) => {
+  db.all(
+    `SELECT o.id, o.table_id, o.item_id, o.quantity, o.status, m.name, m.price
+     FROM orders o
+     JOIN menu_items m ON o.item_id = m.id
+     ORDER BY o.id DESC
+     LIMIT 200`,
+    [],
+    (err, rows) => {
+      if (err) return res.status(500).json({ error: 'Failed to load orders' });
+      res.json(rows);
+    }
+  );
+});
+
 module.exports = router;
