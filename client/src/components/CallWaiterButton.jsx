@@ -5,7 +5,7 @@ export default function CallWaiterButton({ tableId }) {
         try{
             await api.post('/api/tables/call-waiter', { tableId: tableId });
             alert('A waiter has been notified and will assist you shortly.');
-        }catch (err) {
+        }catch {
             alert('Could not notify waiter. Please try again.');
         }
     }

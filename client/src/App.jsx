@@ -13,7 +13,7 @@ function Home() {
       {error === 'missing_token' && <p style={{ color: 'crimson' }}>Missing table token in URL.</p>}
       {error === 'invalid_token' && <p style={{ color: 'crimson' }}>That QR link is not valid.</p>}
       <p>Scan a table QR to open the menu for your table.</p>
-      <p><Link to="/admin">Staff dashboard</Link></p>
+      {/* <p><Link to="/admin">Staff dashboard</Link></p> */}
     </div>
   );
 }

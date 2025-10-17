@@ -23,7 +23,7 @@ function InnerMenu() {
         setTable(tableInfo);
         const { data: menuItems } = await api.get('/api/menu');
         setMenu(menuItems);
-      } catch (e) {
+      } catch  {
         navigate('/?error=invalid_token');
       }
     })();
@@ -39,7 +39,7 @@ function InnerMenu() {
       await api.post('/api/order', payload);
       clear();
       navigate(`/success?table=${table.table_number}`);
-    } catch (e) {
+    } catch {
       alert('Failed to place order. Please try again.');
     }
   };
