@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-do
 import MenuPage from './pages/MenuPage';
 import OrderSuccess from './pages/OrderSuccess';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminNewItem from './pages/AdminNewItem';
 
 function Home() {
   const { search } = useLocation();
@@ -26,6 +27,7 @@ export default function App() {
         <Route path="/menu" element={<MenuPage/>} />
         <Route path="/success" element={<OrderSuccess/>} />
         <Route path="/admin" element={<AdminDashboard/>} />
+        <Route path="/admin/new-item" element={<AdminNewItem/>} />
       </Routes>
     </BrowserRouter>
   );

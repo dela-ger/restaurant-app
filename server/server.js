@@ -13,6 +13,8 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
+// static folder for uploaded images
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // static folder for QR codes
 app.use('/qrcodes', express.static(path.join(__dirname, 'qrcodes')));
@@ -22,6 +24,7 @@ app.use('/qrcodes', express.static(path.join(__dirname, 'qrcodes')));
 app.use('/api/menu', menuRoutes);
 app.use('/api/order', orderRoutes);
 app.use('/api/table', tableRoutes);
+app.use('/api/media', require('./routes/media'));
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
