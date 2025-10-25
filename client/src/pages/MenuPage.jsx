@@ -14,6 +14,7 @@ function InnerMenu() {
   const [table, setTable] = useState(null);
   const [menu, setMenu] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [menuError, setMenuError] = useState(null);
 
   // category filter state
   const [selectedCat, setSelectedCat] = useState('All');
@@ -25,18 +26,40 @@ function InnerMenu() {
       navigate('/?error=missing_token');
       return;
     }
+
+    let cancelled = false;
+
     (async () => {
+      // 1) Resolve token — only this controls invalid_token redirect
       try {
         const { data: tableInfo } = await api.get(`/api/table/resolve/${token}`);
+        if (cancelled) return;
         setTable(tableInfo);
-        const { data: menuItems } = await api.get('/api/menu');
-        setMenu(menuItems);
       } catch (e) {
-        navigate('/?error=invalid_token');
+        if (!cancelled) navigate('/?error=invalid_token');
+        return; // stop here if token is invalid
+      }
+
+      // 2) Fetch menu — failure should NOT redirect; show message instead
+      try {
+        const { data: menuItems } = await api.get('/api/menu');
+        if (cancelled) return;
+        setMenu(menuItems);
+        setMenuError(null);
+      } catch (e) {
+        console.error('Menu load failed:', e);
+        if (!cancelled) {
+          setMenu([]);                // keep page up
+          setMenuError('We couldn’t load the menu. Please try again in a moment.');
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [token, navigate]);
 
   const uniqueCats = useMemo(
@@ -45,8 +68,7 @@ function InnerMenu() {
   );
 
   const filteredMenu = useMemo(
-    () =>
-      menu.filter(m => selectedCat === 'All' || (m.category || 'Other') === selectedCat),
+    () => menu.filter(m => selectedCat === 'All' || (m.category || 'Other') === selectedCat),
     [menu, selectedCat]
   );
 
@@ -66,13 +88,19 @@ function InnerMenu() {
   };
 
   if (loading) return <p style={{ padding: 20 }}>Loading…</p>;
-  if (!table) return null; // navigate already handled errors
+  if (!table) return null; // token resolver handled redirect
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 16, padding: 20 }}>
       {/* Left: menu + actions */}
       <div>
         <h2 style={{ marginTop: 0 }}>Menu — Table {table.table_number}</h2>
+
+        {/* Inline error if menu failed but token is valid */}
+        {menuError && (
+          <p style={{ color: '#b00', margin: '8px 0 16px' }}>{menuError}</p>
+        )}
+
 
         {/* Category filter chips */}
         <div style={{ display: 'flex', gap: 8, margin: '8px 0 16px' }}>

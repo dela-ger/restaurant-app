@@ -3,7 +3,8 @@ const sqlite3 = require('sqlite3').verbose();
 const { generateQrPng } = require('../utils/qrGenerator');
 
 const router = express.Router();
-const db = new sqlite3.Database('./db/database.sqlite');
+// const db = new sqlite3.Database('./db/database.sqlite');
+const db = require('../db/conn');
 
 // POST /api/table/call-waiter — Notify waiter
 router.post('/call-waiter', (req, res) => {

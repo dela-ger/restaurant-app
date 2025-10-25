@@ -1,3 +1,5 @@
+console.log('media.js loaded');
+
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
@@ -24,7 +26,7 @@ function fileFilter(_req, file, cb) {
   else cb(new Error('Only image files are allowed'));
 }
 
-const upload = multer({ storage, fileFilter, limits: { fileSize: 2 * 1024 * 1024 } }); // 2MB
+const upload = multer({ storage, fileFilter, limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB
 
 // POST /api/media/upload (multipart/form-data) => { url }
 router.post('/upload', upload.single('image'), (req, res) => {

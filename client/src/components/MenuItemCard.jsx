@@ -1,13 +1,26 @@
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 export default function MenuItemCard({ item, onAdd }) {
+  // Build full URL if image_url is relative (e.g., "/uploads/xyz.jpg")
+  const src = item.image_url
+    ? (item.image_url.startsWith('http')
+        ? item.image_url
+        : `${API_BASE}${item.image_url}`)
+    : null;
+
   return (
     <div style={styles.card}>
-      {item.image_url ? (
+      {src ? (
         <img
-          src={item.image_url}
+          src={src}
           alt={item.name}
           loading="lazy"
           style={styles.img}
-          onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+          onError={(e) => {
+            // Comment this out while debugging if you want to see the broken icon
+
+            e.currentTarget.style.visibility = 'hidden';
+          }}
         />
       ) : null}
       <div>

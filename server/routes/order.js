@@ -11,7 +11,8 @@ const NEXT_STEPS = {
   cancelled: []
 }
 
-const db = new sqlite3.Database('./db/database.sqlite');
+// const db = new sqlite3.Database('./db/database.sqlite');
+const db = require('../db/conn');
 
 function getOrder(id) {
   return new Promise((resolve, reject) => {
