@@ -28,13 +28,13 @@ export function CartProvider({ token, children }) {
     const updateQty = (id, qty) => 
         setItems(prev => prev.map(p => p.id == id ? { ...p, quantity: Math.max(qty,1) } : p));
 
-    const remoceItem = (id) => setItems(prev => prev.filter(p => p.id != id));
+    const removeItem = (id) => setItems(prev => prev.filter(p => p.id != id));
 
     const clear = () => setItems([]);
 
     const total = items.reduce((sum, it) => sum + it.price * it.quantity, 0);
 
-    const value = useMemo(() => ({ items, addItem, updateQty, remoceItem, clear, total }), [items, total]);
+    const value = useMemo(() => ({ items, addItem, updateQty, removeItem, clear, total }), [items, total]);
 
     return <CartContext.Provider value={value}>{children}</CartContext.Provider>
 }

@@ -15,8 +15,6 @@ function InnerMenu() {
   const [menu, setMenu] = useState([]);
   const [loading, setLoading] = useState(true);
   const [menuError, setMenuError] = useState(null);
-
-  // category filter state
   const [selectedCat, setSelectedCat] = useState('All');
 
   const { addItem, clear, items } = useCart();
@@ -30,18 +28,18 @@ function InnerMenu() {
     let cancelled = false;
 
     (async () => {
-      // 1) Resolve token — only this controls invalid_token redirect
       try {
+        // Resolve table token
         const { data: tableInfo } = await api.get(`/api/table/resolve/${token}`);
         if (cancelled) return;
         setTable(tableInfo);
-      } catch (e) {
+      } catch {
         if (!cancelled) navigate('/?error=invalid_token');
-        return; // stop here if token is invalid
+        return;
       }
 
-      // 2) Fetch menu — failure should NOT redirect; show message instead
       try {
+        // Fetch menu
         const { data: menuItems } = await api.get('/api/menu');
         if (cancelled) return;
         setMenu(menuItems);
@@ -49,8 +47,8 @@ function InnerMenu() {
       } catch (e) {
         console.error('Menu load failed:', e);
         if (!cancelled) {
-          setMenu([]);                // keep page up
-          setMenuError('We couldn’t load the menu. Please try again in a moment.');
+          setMenu([]);
+          setMenuError('We couldn’t load the menu. Please try again later.');
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -82,34 +80,41 @@ function InnerMenu() {
       await api.post('/api/order', payload);
       clear();
       navigate(`/success?table=${table.table_number}`);
-    } catch (e) {
+    } catch {
       alert('Failed to place order. Please try again.');
     }
   };
 
   if (loading) return <p style={{ padding: 20 }}>Loading…</p>;
-  if (!table) return null; // token resolver handled redirect
+  if (!table) return null;
+
+  const isMobile = window.innerWidth < 768;
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 16, padding: 20 }}>
-      {/* Left: menu + actions */}
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: isMobile ? '1fr' : '1fr 320px',
+        gap: 20,
+        padding: '16px clamp(12px, 4vw, 24px)',
+        boxSizing: 'border-box',
+        maxWidth: 1200,
+        margin: '0 auto',
+      }}
+    >
+      {/* Left column */}
       <div>
         <h2 style={{ marginTop: 0 }}>Menu — Table {table.table_number}</h2>
+        {menuError && <p style={{ color: '#b00' }}>{menuError}</p>}
 
-        {/* Inline error if menu failed but token is valid */}
-        {menuError && (
-          <p style={{ color: '#b00', margin: '8px 0 16px' }}>{menuError}</p>
-        )}
-
-
-        {/* Category filter chips */}
-        <div style={{ display: 'flex', gap: 8, margin: '8px 0 16px' }}>
+        {/* Category filter */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, margin: '8px 0 16px' }}>
           {uniqueCats.map(cat => (
             <button
               key={cat}
               onClick={() => setSelectedCat(cat)}
               style={{
-                padding: '6px 10px',
+                padding: '6px 12px',
                 borderRadius: 16,
                 border: '1px solid #ddd',
                 background: selectedCat === cat ? '#222' : '#fff',
@@ -122,12 +127,14 @@ function InnerMenu() {
           ))}
         </div>
 
-        {/* Menu grid filtered by selected category */}
+        {/* Menu grid */}
         <div
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-            gap: 12,
+            gap: 16,
+            width: '100%',
+            boxSizing: 'border-box',
           }}
         >
           {filteredMenu.map(item => (
@@ -140,7 +147,7 @@ function InnerMenu() {
         </div>
       </div>
 
-      {/* Right: cart */}
+      {/* Right column */}
       <CartDrawer onCheckout={placeOrder} />
     </div>
   );
