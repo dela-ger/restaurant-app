@@ -1,6 +1,6 @@
 # QR Restaurant Ordering — One-Pager
 
-## 1) What we built
+## 1) What I built
 
 * QR → `/menu?t=<token>` resolves to a **table**.
 * Customer sees **menu**, adds to **cart**, places **order**, can **call waiter**.
