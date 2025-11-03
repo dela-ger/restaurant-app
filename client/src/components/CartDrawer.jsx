@@ -191,7 +191,7 @@ const styles = {
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     boxShadow: '0 -2px 10px rgba(0,0,0,0.15)',
-    padding: '16px 20px',
+    padding: '16px 20px 80px',
     maxHeight: '80vh',
     overflowY: 'auto',
     transition: 'transform 0.3s ease-in-out',
@@ -252,6 +252,7 @@ const styles = {
     justifyContent: 'space-between',
     marginTop: 16,
     paddingTop: 10,
+    paddingBottom: 1000,
     borderTop: '1px solid #eee',
   },
 

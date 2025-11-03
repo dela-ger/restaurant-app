@@ -32,6 +32,18 @@ app.use('/api/menu', menuRoutes);
 app.use('/api/order', orderRoutes);
 app.use('/api/table', tableRoutes);
 
+// serve client in production
+const clientDist = path.join(__dirname, '..', 'client', 'dist');
+app.use(express.static(clientDist));
+
+// SPA fallback
+app.get('/*splat', (req, res) => {
+  if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
+    return res.status(404).end();
+  }
+  res.sendFile(path.join(clientDist, 'index.html'));
+})
+
 // --- NEW: create HTTP server and attach Socket.IO
 const server = http.createServer(app);
 const io = new Server(server, {
