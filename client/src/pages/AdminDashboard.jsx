@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../api/http';
 import { socket } from '../lib/socket';
 
@@ -171,6 +172,8 @@ export default function AdminDashboard() {
           )}
         </tbody>
       </table>
+
+      <Link to="/admin/new-item">Add new item to the menu here...</Link>
     </div>
   );
 }
