@@ -12,6 +12,7 @@ const { Server } = require('socket.io');
 const menuRoutes = require('./routes/menu');
 const orderRoutes = require('./routes/order');
 const tableRoutes = require('./routes/table');
+const analyticsRoutes = require('./routes/analytics');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -31,6 +32,8 @@ app.use('/api/media', require('./routes/media'));
 app.use('/api/menu', menuRoutes);
 app.use('/api/order', orderRoutes);
 app.use('/api/table', tableRoutes);
+app.use('/api/analytics', analyticsRoutes);
+// app.use('/api/debug', required('./routes/debug'));
 
 // serve client in production
 const clientDist = path.join(__dirname, '..', 'client', 'dist');

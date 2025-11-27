@@ -1,16 +1,14 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import api from '../api/http';
-
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export default function AdminNewItem() {
   const [cats, setCats] = useState([]);
+  const [newCatName, setNewCatName] = useState('');
   const [form, setForm] = useState({
     name: '',
     description: '',
     price: '',
     category_id: '',
-    category: '',        // <-- free-text fallback
     image_url: '',
   });
   const [file, setFile] = useState(null);
@@ -18,7 +16,9 @@ export default function AdminNewItem() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
-  // load categories (may return empty [])
+  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+  // Load categories on mount
   useEffect(() => {
     let mounted = true;
     api.get('/api/menu/categories')
@@ -27,14 +27,35 @@ export default function AdminNewItem() {
     return () => { mounted = false; };
   }, []);
 
-  const hasCategories = cats && cats.length > 0;
+  // Function to reload categories
+  const reloadCats = async () => {
+    try {
+      const r = await api.get('/api/menu/categories');
+      setCats(r.data || []);
+    } catch {
+      setCats([]);
+    }
+  };
+
+  // Add new category
+  const addCategory = async () => {
+    if (!newCatName.trim()) return;
+    try {
+      setError('');
+      await api.post('/api/menu/categories', { name: newCatName.trim() });
+      setNewCatName('');
+      await reloadCats();
+    } catch (e) {
+      setError(e.response?.data?.error || 'Failed to add category');
+    }
+  };
 
   const previewSrc = useMemo(() => {
     if (!form.image_url) return '';
     return form.image_url.startsWith('http')
       ? form.image_url
       : `${API_BASE}${form.image_url}`;
-  }, [form.image_url]);
+  }, [form.image_url, API_BASE]);
 
   const upload = async () => {
     try {
@@ -59,26 +80,20 @@ export default function AdminNewItem() {
       setError('');
       setSaving(true);
       const priceNum = Number(form.price);
-      if (!form.name?.trim() || Number.isNaN(priceNum)) {
-        setError('Name and price are required.');
+      if (!form.name.trim() || Number.isNaN(priceNum)) {
+        setError('Name and valid price are required.');
         return;
       }
-
-      // Build payload with either category_id OR category (free text)
       const payload = {
         name: form.name.trim(),
         description: form.description,
         price: priceNum,
-        ...(hasCategories
-          ? (form.category_id ? { category_id: Number(form.category_id) } : {})
-          : (form.category ? { category: form.category.trim() } : {})
-        ),
+        ...(form.category_id ? { category_id: Number(form.category_id) } : {}),
         ...(form.image_url ? { image_url: form.image_url } : {}),
       };
-
       const { data } = await api.post('/api/menu', payload);
       alert(`Created: ${data.name}`);
-      setForm({ name: '', description: '', price: '', category_id: '', category: '', image_url: '' });
+      setForm({ name: '', description: '', price: '', category_id: '', image_url: '' });
       setFile(null);
     } catch (e) {
       setError(e?.response?.data?.error || 'Create failed');
@@ -87,15 +102,7 @@ export default function AdminNewItem() {
     }
   };
 
-  // require image for save to avoid nulls
-  const canSave =
-    !!form.name?.trim() &&
-    !!form.price &&
-    !!form.image_url &&
-    !uploading &&
-    !saving &&
-    (hasCategories ? true : !!form.category?.trim());
-
+  const canSave = !!form.name.trim() && !!form.price && !!form.image_url && !uploading && !saving;
 
   return (
     <div style={{ padding: 20, maxWidth: 520 }}>
@@ -108,18 +115,18 @@ export default function AdminNewItem() {
       )}
 
       <label>
-        Name<br />
+        Name<br/>
         <input
           value={form.name}
           onChange={e => setForm({ ...form, name: e.target.value })}
-          placeholder="e.g., Caesar Salad"
+          placeholder="e.g. Caesar Salad"
           style={{ width: '100%' }}
         />
       </label>
-      <br /><br />
+      <br/><br/>
 
       <label>
-        Description<br />
+        Description<br/>
         <textarea
           value={form.description}
           onChange={e => setForm({ ...form, description: e.target.value })}
@@ -128,10 +135,10 @@ export default function AdminNewItem() {
           style={{ width: '100%' }}
         />
       </label>
-      <br /><br />
+      <br/><br/>
 
       <label>
-        Price<br />
+        Price<br/>
         <input
           type="number"
           step="0.01"
@@ -141,52 +148,46 @@ export default function AdminNewItem() {
           style={{ width: '100%' }}
         />
       </label>
-      <br /><br />
-
-      {/* Category UI: dropdown if we have categories, else free-text input */}
-      {hasCategories ? (
-        <label>
-          Category<br />
-          <select
-            value={form.category_id}
-            onChange={e => setForm({ ...form, category_id: e.target.value })}
-            style={{ width: '100%' }}
-          >
-            <option value="">(none)</option>
-            {cats.map(c => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
-          </select>
-        </label>
-      ) : (
-        <label>
-          Category (type a name)<br />
-          <input
-            value={form.category}
-            onChange={e => setForm({ ...form, category: e.target.value })}
-            placeholder="e.g., Salads"
-            style={{ width: '100%' }}
-          />
-          <div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>
-            No categories found — we’ll save this as a text category.
-          </div>
-        </label>
-      )}
-
-      <br /><br />
+      <br/><br/>
 
       <label>
-        Image<br />
+        Category<br/>
+        <select
+          value={form.category_id}
+          onChange={e => setForm({ ...form, category_id: e.target.value })}
+          style={{ width: '100%' }}
+        >
+          <option value="">(none)</option>
+          {cats.map(c => (
+            <option key={c.id} value={c.id}>{c.name}</option>
+          ))}
+        </select>
+      </label>
+      <br/><br/>
+
+      <label style={{ display: 'block', marginTop: 10 }}>
+        Add new category<br/>
+        <input
+          type="text"
+          placeholder="e.g. Beverages"
+          value={newCatName}
+          onChange={e => setNewCatName(e.target.value)}
+          style={{ width: '70%', marginRight: '8px' }}
+        />
+        <button onClick={addCategory} disabled={!newCatName.trim()}>
+          Add Category
+        </button>
+      </label>
+      <br/><br/>
+
+      <label>
+        Image<br/>
         <input
           type="file"
           accept="image/*"
           onChange={e => setFile(e.target.files?.[0] || null)}
         />
-        <button
-          onClick={upload}
-          disabled={!file || uploading}
-          style={{ marginLeft: 8 }}
-        >
+        <button onClick={upload} disabled={!file || uploading} style={{ marginLeft: 8 }}>
           {uploading ? 'Uploading…' : 'Upload'}
         </button>
       </label>
@@ -197,17 +198,17 @@ export default function AdminNewItem() {
             src={previewSrc}
             alt="preview"
             style={{ width: 220, height: 160, objectFit: 'cover', borderRadius: 8, background: '#f6f6f6' }}
-            onError={(e) => { e.currentTarget.style.opacity = 0.4; }}
+            onError={e => { e.currentTarget.style.opacity = 0.4; }}
           />
           <div style={{ fontSize: 12, color: '#666', marginTop: 6 }}>
             Stored URL: {form.image_url}
           </div>
         </div>
       )}
+      <br/>
 
-      <br />
-      <button onClick={save} disabled={!canSave}>
-        {saving ? 'Saving…' : 'Save item'}
+      <button onClick={save} disabled={!canSave} style={{ width: '100%', padding: '10px', borderRadius: 8, background: '#222', color: '#fff', border: 'none', cursor: canSave ? 'pointer' : 'default' }}>
+        {saving ? 'Saving…' : 'Save Item'}
       </button>
     </div>
   );

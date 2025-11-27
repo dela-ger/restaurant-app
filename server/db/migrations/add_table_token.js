@@ -25,14 +25,14 @@ const sqlite3 = require('sqlite3').verbose();
     const hasToken = cols.some(c => c.name === 'token');
     if (!hasToken) {
       await run(`ALTER TABLE tables ADD COLUMN token TEXT`);
-      console.log('✅ Added tables.token');
+      console.log('Added tables.token');
     } else {
-      console.log('ℹ️ tables.token already exists');
+      console.log('tables.token already exists');
     }
 
     // 2) Ensure unique index (this is how SQLite enforces uniqueness post-add)
     await run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_tables_token ON tables(token)`);
-    console.log('✅ Ensured unique index on tables.token');
+    console.log('Ensured unique index on tables.token');
 
     // 3) Backfill tokens where missing
     const rows = await all(`SELECT id, token FROM tables`);
@@ -43,14 +43,14 @@ const sqlite3 = require('sqlite3').verbose();
         await run(`UPDATE tables SET token = ? WHERE id = ?`, [nanoid(), r.id]);
       }
       await run('COMMIT');
-      console.log(`✅ Backfilled ${missing.length} token(s)`);
+      console.log(`Backfilled ${missing.length} token(s)`);
     } else {
-      console.log('ℹ️ All rows already have tokens');
+      console.log('All rows already have tokens');
     }
 
-    console.log('🎉 Migration complete.');
+    console.log('Migration complete.');
   } catch (e) {
-    console.error('❌ Migration failed:', e.message);
+    console.error('Migration failed:', e.message);
     try { await run('ROLLBACK'); } catch {}
   } finally {
     db.close();

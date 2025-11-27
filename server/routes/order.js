@@ -41,7 +41,7 @@ router.post('/', (req, res) => {
   }
 
   const stmt = db.prepare(
-    `INSERT INTO orders (table_id, item_id, quantity) VALUES (?, ?, ?)`
+    `INSERT INTO orders (table_id, item_id, quantity, placed_at) VALUES (?, ?, ?, datetime('now'))`
   );
 
   let hadError = false;

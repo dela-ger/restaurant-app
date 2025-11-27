@@ -163,4 +163,30 @@ router.patch('/:id', (req, res) => {
   });
 });
 
+// add categories table if missing
+router.post('/categories', async (req, res) => {
+  const { name } = req.body || {};
+  if (!name || typeof name !== 'string') {
+    return res.status(400).json({ error: 'Category name is required' });
+  }
+
+  try {
+    const hasCategories = await tableExists('categories');
+    if (!hasCategories) {
+      return res.status(400).json({ error: 'Categories table does not exist' });
+    }
+
+    db.run(`INSERT INTO categories (name) VALUES (?)`, [name.trim()], function (err) {
+      if (err) {
+        console.error('Insert category error:', err.message);
+        return res.status(500).json({ error: 'Failed to create category' });
+      }
+      res.json({ id: this.lastID, name: name.trim() });
+    });
+  } catch (e) {
+    console.error('POST /categories error:', e.message);
+    res.status(500).json({ error: 'Failed to add category' });
+  }
+});
+
 module.exports = router;
